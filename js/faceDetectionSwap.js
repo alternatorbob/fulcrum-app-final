@@ -5,7 +5,7 @@ import {
     createMaskCanvas,
     createDetectionsCanvas,
 } from "./drawUtils";
-
+import { cropCanvas } from "./utils";
 import { inPaint } from "./replicate";
 
 Promise.all([
@@ -21,6 +21,8 @@ function start() {
 
 export async function getDetections(img) {
     let myPrompt;
+    let detectionObjects = [];
+
     const image = await faceapi.bufferToImage(img);
     const detectionsCanvas = createDetectionsCanvas(image);
     const displaySize = { width: image.width, height: image.height };
@@ -33,23 +35,29 @@ export async function getDetections(img) {
 
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
-    resizedDetections.forEach((result) => {
-        const { age, gender } = result;
-        const box = result.detection.box;
-
-        const drawBox = new faceapi.draw.DrawBox(box, {
-            label: `${gender}, ${Math.round(age, 0)} years`,
-        });
-
-        faceapi.draw.drawFaceLandmarks(detectionsCanvas, result, {
-            drawLines: true,
-        });
-
-        //nose = 27-30-35
+    resizedDetections.forEach(async (result, index) => {
+        const { gender, age } = result;
+        let box = result.detection.box;
         const points = result.landmarks.positions;
-        //create array in which you push each drawbox
-        const drawBoxes = [];
-        drawBoxes.push(drawBox);
+
+        //draws face boxes
+        faceapi.draw.drawDetections(detectionsCanvas, result);
+        //draws face landmarks
+        // faceapi.draw.drawFaceLandmarks(detectionsCanvas, result, {
+        //     drawLines: false,
+        // });
+        //nose = 27-30-35
+
+        const mask = createMaskCanvas(image, points, index);
+        box = moveDetectionBox(box);
+
+        detectionObjects.push({
+            box: box,
+            mask: mask,
+            points: points,
+            gender: gender,
+            age: age,
+        });
 
         /*
         //brow left
@@ -84,30 +92,48 @@ export async function getDetections(img) {
         //mouth middle bottom
         highlightPoints(detectionsCanvas, points[57]);
         */
-
-        drawMask(detectionsCanvas, points);
-        createMaskCanvas(image, points);
-
-        myPrompt =
-            gender === "male"
-                ? `A photorealistic man's portrait, he`
-                : `A photorealistic woman's portrait, she`;
-
-        myPrompt += `is around ${Math.round(
-            age
-        )} of age, <1>, looking at the camera, (((masterpiece))), (((bestquality))), ((ultra-detailed)), (beautifuldetailedeyes), (detailedlight), 
-        RAW photo, 8k, uhd, dslr, 
-        ::Shot on a Canon EOS 5D Mark IV with a 200mm f/1.4L IS USM lens, 
-        capturing rich tonality, exceptional sharpness, 
-        ::1 High-resolution ::Wallpaper ratio, high-resolution, 
-        --ar 16:9 --q 5 --v 5 --s 750`;
-
-        // A photorealistic portrait of  woman
-
-        // myPrompt = gender === "male" ? `A man's face` : `A woman's face`;
     });
 
+    const canvasArray = detectionObjects.map((obj) => obj.box);
+    const canvases = await faceapi.extractFaces(image, canvasArray);
+
+    detectionObjects.forEach((o) => {
+        console.log(o.box);
+        console.log(o.mask);
+
+        const canvas = cropCanvas(
+            image,
+            o.box._x,
+            o.box._y,
+            o.box._width,
+            o.box._height
+        );
+        appendCanvas(canvas);
+    });
+
+    const croppedMasks = detectionObjects.map((obj) => obj.mask);
+
+    // appendCanvas(canvases);
+    // appendCanvas(croppedMasks);
+    // const canvases = await faceapi.extractFaces(image, detectionObjects.box);
+
     return myPrompt;
+}
+
+function moveDetectionBox(box) {
+    box._x -= box._width / 2;
+
+    box._width > box._height
+        ? (box._height = box._width)
+        : (box._width = box._height);
+
+    return box;
+}
+
+function appendCanvas(canvas) {
+    const div = document.querySelector("#photo--input--container");
+    canvas.style.width = "60px";
+    div.appendChild(canvas);
 }
 
 export async function swapFace(myPrompt) {
@@ -115,13 +141,8 @@ export async function swapFace(myPrompt) {
     const canvas = document.querySelector("#image--canvas");
     const canvas64 = canvas.toDataURL();
 
-    const maskCanvas = document.querySelector("#mask--canvas");
+    const maskCanvas = document.querySelector(".mask--canvas");
     const mask64 = maskCanvas.toDataURL();
-
-    // const loader = document.querySelector(".loader");
-    //     e.preventDefault();
-    //     // create formdata
-    //     // canvas to file
 
     const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
         console.log("progression:", value);
@@ -135,6 +156,4 @@ export async function swapFace(myPrompt) {
     document.querySelector("#detections--canvas").classList.add("hidden");
     const container = document.querySelector("#photo--input--container");
     container.appendChild(img);
-    // const detectionsCanvas = document.querySelector("#detections--canvas");
-    // const ctx = detectionsCanvas.getContext("2d");
 }

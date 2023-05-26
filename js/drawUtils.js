@@ -76,11 +76,11 @@ export function drawMask(canvas, points) {
     // ctx.stroke();
 }
 
-export function createMaskCanvas(img, points) {
+export function createMaskCanvas(img, points, id) {
     const container = document.querySelector("#photo--input--container");
-
     const maskCanvas = document.createElement("canvas");
-    maskCanvas.id = "mask--canvas";
+    maskCanvas.class = `mask--canvas`;
+    maskCanvas.id = `mask--canvas--${id}`;
     maskCanvas.width = img.width;
     maskCanvas.height = img.height;
     maskCanvas.classList.add("hidden");
@@ -92,6 +92,8 @@ export function createMaskCanvas(img, points) {
     drawMask(maskCanvas, points);
 
     container.append(maskCanvas);
+
+    return maskCanvas;
 }
 
 export function cropToSquare(canvas) {

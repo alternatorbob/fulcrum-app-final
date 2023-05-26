@@ -1,3 +1,14 @@
+export function cropCanvas(sourceCanvas, x, y, width, height) {
+    const croppedCanvas = document.createElement("canvas");
+    croppedCanvas.width = width;
+    croppedCanvas.height = height;
+
+    const ctx = croppedCanvas.getContext("2d");
+    ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, width, height);
+
+    return croppedCanvas;
+}
+
 export function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
