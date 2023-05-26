@@ -1,7 +1,6 @@
 import { handleViewChange } from "../main";
 import { onImageUpload } from "./handleImage";
-export let imageResult,
-    activeView = "home";
+import { activeView, switchView } from "./ui";
 
 export function attachListeners() {
     //home
@@ -72,22 +71,6 @@ export function attachListeners() {
     promptButton.addEventListener("click", async () => {
         popupContainer.classList.add("active");
         activeView = "edit-prompt";
-        await handleViewChange();
+        handleViewChange();
     });
-}
-
-export function switchView(destination) {
-    if (activeView == "edit-prompt") {
-        document.querySelector(".popup-container").classList.remove("active");
-    } else {
-        let viewSelector = document.querySelector(`.${activeView}`);
-
-        viewSelector.classList.add("hidden");
-
-        viewSelector = document.querySelector(`.${destination}`);
-        viewSelector.classList.remove("hidden");
-    }
-
-    activeView = destination;
-    handleViewChange();
 }

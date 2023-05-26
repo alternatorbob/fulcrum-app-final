@@ -1,14 +1,5 @@
-import { attachListeners, activeView } from "./js/attachListeners";
-
-const canvas = document.querySelector("#image--canvas");
-const imgResults = document.querySelector("#result");
-const ctx = canvas.getContext("2d");
-
-const form = document.querySelector("#form");
-
-// const imageInput = form.querySelector('input[type="file"]');
-const imageInput = document.querySelector("#camera-input");
-let canvas64, mask64, myPrompt;
+import { attachListeners } from "./js/attachListeners";
+import { activeView } from "./js/ui";
 
 export function handleViewChange() {
     switch (activeView) {
@@ -18,9 +9,6 @@ export function handleViewChange() {
 
         case "result":
             console.log(`Current View: ${activeView}`);
-            // displayDetections();
-            // const imageSelector = document.querySelector("#image-result");
-            // imageSelector.src = imageResult;
             break;
 
         case "edit":

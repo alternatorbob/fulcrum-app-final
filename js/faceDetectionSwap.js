@@ -1,10 +1,12 @@
 import * as faceapi from "face-api.js";
-import { highlightPoints } from "./utils";
+import { Loader } from "./ui";
 import {
     drawMask,
     createMaskCanvas,
     createDetectionsCanvas,
 } from "./drawUtils";
+
+import { inPaint } from "./replicate";
 
 Promise.all([
     faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
@@ -106,4 +108,33 @@ export async function getDetections(img) {
     });
 
     return myPrompt;
+}
+
+export async function swapFace(myPrompt) {
+    const loader = new Loader();
+    const canvas = document.querySelector("#image--canvas");
+    const canvas64 = canvas.toDataURL();
+
+    const maskCanvas = document.querySelector("#mask--canvas");
+    const mask64 = maskCanvas.toDataURL();
+
+    // const loader = document.querySelector(".loader");
+    //     e.preventDefault();
+    //     // create formdata
+    //     // canvas to file
+
+    const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
+        console.log("progression:", value);
+
+        loader.show();
+    }).then(window.scrollTo(0, document.body.scrollHeight));
+    const img = new Image();
+    img.src = output;
+    loader.hide();
+
+    document.querySelector("#detections--canvas").classList.add("hidden");
+    const container = document.querySelector("#photo--input--container");
+    container.appendChild(img);
+    // const detectionsCanvas = document.querySelector("#detections--canvas");
+    // const ctx = detectionsCanvas.getContext("2d");
 }
