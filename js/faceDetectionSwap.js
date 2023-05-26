@@ -52,6 +52,7 @@ export async function getDetections(img) {
         box = moveDetectionBox(box);
 
         detectionObjects.push({
+            image: cropCanvas(image, box._x, box._y, box._width, box._height),
             box: box,
             mask: mask,
             points: points,
@@ -94,31 +95,63 @@ export async function getDetections(img) {
         */
     });
 
-    const canvasArray = detectionObjects.map((obj) => obj.box);
-    const canvases = await faceapi.extractFaces(image, canvasArray);
-
-    detectionObjects.forEach((o) => {
-        console.log(o.box);
-        console.log(o.mask);
+    detectionObjects.forEach(async (object) => {
+        object.mask = cropCanvas(
+            object.mask,
+            object.box._x,
+            object.box._y,
+            object.box._width,
+            object.box._height
+        );
 
         const canvas = cropCanvas(
             image,
-            o.box._x,
-            o.box._y,
-            o.box._width,
-            o.box._height
+            object.box._x,
+            object.box._y,
+            object.box._width,
+            object.box._height
         );
-        appendCanvas(canvas);
+
+        // appendElem(object.mask);
+        // appendElem(canvas);
+
+        SwapFace(canvas, object.mask);
+    });
+}
+
+async function SwapFace(canvas, mask) {
+    const canvas64 = canvas.toDataURL();
+    const mask64 = mask.toDataURL();
+    const output = await inPaint(canvas64, mask64, "a man's face", (value) => {
+        console.log("progression:", value);
     });
 
-    const croppedMasks = detectionObjects.map((obj) => obj.mask);
-
-    // appendCanvas(canvases);
-    // appendCanvas(croppedMasks);
-    // const canvases = await faceapi.extractFaces(image, detectionObjects.box);
-
-    return myPrompt;
+    const img = new Image();
+    img.src = output;
+    appendElem(img);
 }
+
+// export async function swapFace(myPrompt) {
+//     const loader = new Loader();
+//     const canvas = document.querySelector("#image--canvas");
+//     const canvas64 = canvas.toDataURL();
+
+//     const maskCanvas = document.querySelector(".mask--canvas");
+//     const mask64 = maskCanvas.toDataURL();
+
+//     const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
+//         console.log("progression:", value);
+
+//         loader.show();
+//     }).then(window.scrollTo(0, document.body.scrollHeight));
+//     const img = new Image();
+//     img.src = output;
+//     loader.hide();
+
+//     document.querySelector("#detections--canvas").classList.add("hidden");
+//     const container = document.querySelector("#photo--input--container");
+//     container.appendChild(img);
+// }
 
 function moveDetectionBox(box) {
     box._x -= box._width / 2;
@@ -130,30 +163,8 @@ function moveDetectionBox(box) {
     return box;
 }
 
-function appendCanvas(canvas) {
+function appendElem(elem) {
     const div = document.querySelector("#photo--input--container");
-    canvas.style.width = "60px";
-    div.appendChild(canvas);
-}
-
-export async function swapFace(myPrompt) {
-    const loader = new Loader();
-    const canvas = document.querySelector("#image--canvas");
-    const canvas64 = canvas.toDataURL();
-
-    const maskCanvas = document.querySelector(".mask--canvas");
-    const mask64 = maskCanvas.toDataURL();
-
-    const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
-        console.log("progression:", value);
-
-        loader.show();
-    }).then(window.scrollTo(0, document.body.scrollHeight));
-    const img = new Image();
-    img.src = output;
-    loader.hide();
-
-    document.querySelector("#detections--canvas").classList.add("hidden");
-    const container = document.querySelector("#photo--input--container");
-    container.appendChild(img);
+    elem.style.width = "60px";
+    div.appendChild(elem);
 }

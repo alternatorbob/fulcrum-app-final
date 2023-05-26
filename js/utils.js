@@ -1,10 +1,15 @@
 export function cropCanvas(sourceCanvas, x, y, width, height) {
     const croppedCanvas = document.createElement("canvas");
-    croppedCanvas.width = width;
-    croppedCanvas.height = height;
+    // Calculate the new width and height to ensure they are multiples of 8
+    const newWidth = 512;
+    const newHeight = 512;
+    // const newWidth = Math.ceil(width / 8) * 8;
+    // const newHeight = Math.ceil(height / 8) * 8;
+    croppedCanvas.width = newWidth;
+    croppedCanvas.height = newHeight;
 
     const ctx = croppedCanvas.getContext("2d");
-    ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, width, height);
+    ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, newWidth, newHeight);
 
     return croppedCanvas;
 }
@@ -14,7 +19,6 @@ export function delay(ms) {
 }
 
 export function highlightPoints(canvas, point) {
-    // console.log(canvas, point);
     const ctx = canvas.getContext("2d");
     const radius = 10;
     const { x, y } = point;

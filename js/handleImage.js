@@ -1,4 +1,4 @@
-import { getDetections, swapFace } from "./faceDetectionSwap";
+import { getDetections } from "./faceDetectionSwap";
 import { Loader } from "./ui";
 
 export async function onImageUpload(e) {
@@ -23,8 +23,8 @@ export async function onImageUpload(e) {
     };
     if (file) {
         reader.readAsDataURL(file);
-
-        let myPrompt = await getDetections(file);
+        getDetections(file);
+        // let myPrompt = await getDetections(file);
         // swapFace(myPrompt);
     }
 }
