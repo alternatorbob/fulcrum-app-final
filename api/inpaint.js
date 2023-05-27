@@ -16,6 +16,7 @@ export default async (req, res) => {
         });
     });
 
+    console.log(data);
     // const base64 = await readAsDataURL(data.files.image);
 
     // const { prompt, image, mask } = ;

@@ -116,8 +116,8 @@ export async function getDetections(img) {
             object.box._height
         );
 
-        appendElem(object.mask);
-        appendElem(canvas);
+        // appendElem(object.mask);
+        // appendElem(canvas);
 
         SwapFace(canvas, object.mask);
     });
