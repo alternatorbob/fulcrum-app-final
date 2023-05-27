@@ -1,12 +1,9 @@
 import * as faceapi from "face-api.js";
 import { Loader } from "./ui";
-import {
-    drawMask,
-    createMaskCanvas,
-    createDetectionsCanvas,
-} from "./drawUtils";
+import { createMaskCanvas, createDetectionsCanvas } from "./drawUtils";
 import { cropCanvas } from "./utils";
 import { inPaint } from "./replicate";
+import { getPrompt } from "./getPrompt";
 
 Promise.all([
     faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
@@ -20,8 +17,8 @@ function start() {
 }
 
 export async function getDetections(img) {
-    let myPrompt;
     let detectionObjects = [];
+    let swappedFaces = [];
 
     const image = await faceapi.bufferToImage(img);
     const detectionsCanvas = createDetectionsCanvas(image);
@@ -100,40 +97,26 @@ export async function getDetections(img) {
     });
 
     detectionObjects.forEach(async (object) => {
-        object.mask = cropCanvas(
-            object.mask,
-            object.box._x,
-            object.box._y,
-            object.box._width,
-            object.box._height
-        );
+        const { _x, _y, _width, _height } = object.box;
+        const canvas = cropCanvas(image, _x, _y, _width, _height);
+        object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
 
-        const canvas = cropCanvas(
-            image,
-            object.box._x,
-            object.box._y,
-            object.box._width,
-            object.box._height
-        );
+        const promptDetails = { gender: object.gender, age: object.age };
+        let myPrompt = getPrompt(promptDetails);
 
-        // appendElem(object.mask);
-        // appendElem(canvas);
-
-        SwapFace(canvas, object.mask);
+        let swappedFace = await swapFace(canvas, object.mask, myPrompt);
     });
 }
 
-async function SwapFace(canvas, mask) {
+async function swapFace(canvas, mask, myPrompt) {
     const canvas64 = canvas.toDataURL();
     const mask64 = mask.toDataURL();
-    const output = await inPaint(canvas64, mask64, "a man's face", (value) => {
-        const lines = value.split("\n").filter(Boolean);
-        const lastLine = lines[lines.length - 1];
 
-        let number = 0;
-
-        if (lastLine) number = Number(lastLine.split("%")[0]);
-
+    const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
+        // const lines = value.split("\n").filter(Boolean);
+        // const lastLine = lines[lines.length - 1];
+        // let number = 0;
+        // if (lastLine) number = Number(lastLine.split("%")[0]);
         // console.log(number);
         console.log(value);
     });
@@ -141,29 +124,26 @@ async function SwapFace(canvas, mask) {
     const img = new Image();
     img.src = output;
     appendElem(img);
+    return img;
 }
 
-// export async function swapFace(myPrompt) {
-//     const loader = new Loader();
-//     const canvas = document.querySelector("#image--canvas");
-//     const canvas64 = canvas.toDataURL();
+function drawSwappedFace(object) {
+    const img = new Image();
+    img.src = object.image;
 
-//     const maskCanvas = document.querySelector(".mask--canvas");
-//     const mask64 = maskCanvas.toDataURL();
-
-//     const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
-//         console.log("progression:", value);
-
-//         loader.show();
-//     }).then(window.scrollTo(0, document.body.scrollHeight));
-//     const img = new Image();
-//     img.src = output;
-//     loader.hide();
-
-//     document.querySelector("#detections--canvas").classList.add("hidden");
-//     const container = document.querySelector("#photo--input--container");
-//     container.appendChild(img);
-// }
+    const { _x, _y, _width, _height } = object.box;
+    const canvas = document.querySelector("#image--canvas");
+    const ctx = canvas.getContext("2d");
+    // ctx.drawImage(object.image, _x, _y, _width, _height);
+    ctx.drawImage(object.image, 50, 50, 100, 100);
+    ctx.save();
+    ctx.lineWidth = "10";
+    ctx.strokeStyle = "blue";
+    // ctx.rect(50, 50, 150, 80);
+    ctx.drawImage(img, _x, _y, _width, _height);
+    // ctx.rect(_x, _y, _width, _height);
+    ctx.restore();
+}
 
 function moveDetectionBox(box) {
     box._x -= box._width / 2;

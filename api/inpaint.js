@@ -10,22 +10,26 @@ export default async (req, res) => {
 
     const data = await new Promise((resolve, reject) => {
         const form = new IncomingForm();
+        const fieldsToParse = [
+            "width",
+            "height",
+            "num_inference_steps integer",
+        ];
+
         form.parse(req, (err, fields, files) => {
             if (err) return reject(err);
+
+            for (const fieldName in fields) {
+                fieldsToParse.includes(fieldName)
+                    ? (fields[fieldName] = parseInt(fields[fieldName], 10))
+                    : null;
+            }
+
             resolve({ fields, files });
         });
     });
 
-    console.log(data);
-    // const base64 = await readAsDataURL(data.files.image);
-
-    // const { prompt, image, mask } = ;
-
-    // const input = {
-    //     prompt,
-    //     init_image: image,
-    //     mask,
-    // };
+    console.log(data.fields);
 
     const response = await fetch(`${API_HOST}/v1/predictions`, {
         method: "POST",
@@ -51,14 +55,3 @@ export default async (req, res) => {
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));
 };
-
-function readAsDataURL(file) {
-    return new Promise((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onerror = reject;
-        fr.onload = () => {
-            resolve(fr.result);
-        };
-        fr.readAsDataURL(file);
-    });
-}
