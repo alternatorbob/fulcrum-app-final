@@ -1,6 +1,6 @@
 import { handleViewChange } from "../main";
 import { onImageUpload } from "./handleImage";
-import { activeView, switchView } from "./ui";
+import { activeView, switchView, moveCanvasLayers } from "./ui";
 
 export function attachListeners() {
     //home
@@ -17,6 +17,7 @@ export function attachListeners() {
 
     editButton.addEventListener("click", () => {
         switchView("edit");
+        moveCanvasLayers("edit");
     });
 
     backButton.addEventListener("click", () => {
@@ -38,6 +39,7 @@ export function attachListeners() {
 
                 case "edit":
                     switchView("result");
+                    moveCanvasLayers("result");
                     break;
                 case "edit-prompt":
                     switchView("edit");
@@ -55,6 +57,7 @@ export function attachListeners() {
 
                 case "edit":
                     switchView("result");
+                    moveCanvasLayers("result");
                     break;
 
                 case "edit-prompt":

@@ -1,9 +1,17 @@
 import * as faceapi from "face-api.js";
-import { CircleAnimation, Loader, FaceBox, drawFaceBox } from "./ui";
-import { createMaskCanvas, createDetectionsCanvas } from "./drawUtils";
-import { cropCanvas } from "./utils";
+import { CircleAnimation, Loader } from "./ui";
+import {
+    createMaskCanvas,
+    createCanvasLayers,
+    adjustDetectionBoxes,
+    invertColors,
+    updateResult,
+} from "./drawUtils";
+import { cropCanvas, appendElem } from "./utils";
 import { inPaint } from "./replicate";
 import { getPrompt } from "./getPrompt";
+
+export let detectionObjects = [];
 
 Promise.all([
     faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
@@ -17,11 +25,10 @@ function start() {
 }
 
 export async function getDetections(img) {
-    let detectionObjects = [];
     let swappedFaces = [];
 
     const image = await faceapi.bufferToImage(img);
-    const detectionsCanvas = createDetectionsCanvas(image);
+    const detectionsCanvas = createCanvasLayers(image);
     const displaySize = { width: image.width, height: image.height };
     faceapi.matchDimensions(detectionsCanvas, displaySize);
 
@@ -54,21 +61,19 @@ export async function getDetections(img) {
         //     drawLines: true,
         // });
 
-        const scaleFactor = 1.5;
-        drawFaceBox(detectionsCanvas, box, scaleFactor);
-
         //nose = 27-30-35
 
         const mask = createMaskCanvas(image, points, index);
-        box = moveDetectionBox(box);
 
         detectionObjects.push({
             image: cropCanvas(image, box._x, box._y, box._width, box._height),
-            box: box,
+            detectionBox: adjustDetectionBoxes(box)[0],
+            squareBox: adjustDetectionBoxes(box)[1],
             mask: mask,
             points: points,
             gender: gender,
             age: age,
+            isShowing: true,
         });
 
         /*
@@ -107,7 +112,9 @@ export async function getDetections(img) {
     });
 
     detectionObjects.forEach(async (object) => {
-        const { _x, _y, _width, _height } = object.box;
+        const { _x, _y, _width, _height } = object.squareBox;
+        updateResult();
+
         const canvas = cropCanvas(image, _x, _y, _width, _height);
         object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
 
@@ -116,7 +123,9 @@ export async function getDetections(img) {
 
         let swappedFace = await swapFace(canvas, object.mask, myPrompt).then(
             (swappedFace) => {
-                appendElem(swappedFace);
+                object.result = swappedFace;
+                // appendElem(swappedFace);
+                updateResult();
                 // createCanvasFromImage(swappedFace);
             }
         );
@@ -126,6 +135,8 @@ export async function getDetections(img) {
 async function swapFace(canvas, mask, myPrompt) {
     const canvas64 = canvas.toDataURL();
     const mask64 = mask.toDataURL();
+
+    const output = invertColors(canvas);
 
     // const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
     //     const lines = value.split("\n").filter(Boolean);
@@ -137,64 +148,8 @@ async function swapFace(canvas, mask, myPrompt) {
     // });
 
     const img = new Image();
-    img.src = canvas;
-    // img.src = output;
+    img.src = output;
+    // img.src = canvas;
 
-    return img;
-}
-
-function createCanvasFromImage(img) {
-    const div = document.querySelector("#photo--input--container");
-
-    if (div) {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        // Set canvas dimensions to match image dimensions
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        // Draw the image onto the canvas
-        context.drawImage(img, 0, 0);
-
-        // Append the canvas to the div
-        div.appendChild(canvas);
-        console.error("Was appended");
-    } else {
-        console.error("Image or div element not found.");
-    }
-}
-
-function drawSwappedFace(object) {
-    const img = new Image();
-    img.src = object.image;
-
-    const { _x, _y, _width, _height } = object.box;
-    const canvas = document.querySelector("#image--canvas");
-    const ctx = canvas.getContext("2d");
-    // ctx.drawImage(object.image, _x, _y, _width, _height);
-    ctx.drawImage(object.image, 50, 50, 100, 100);
-    ctx.save();
-    ctx.lineWidth = "10";
-    ctx.strokeStyle = "blue";
-    // ctx.rect(50, 50, 150, 80);
-    ctx.drawImage(img, _x, _y, _width, _height);
-    // ctx.rect(_x, _y, _width, _height);
-    ctx.restore();
-}
-
-function moveDetectionBox(box) {
-    box._x -= box._width / 2;
-
-    box._width > box._height
-        ? (box._height = box._width)
-        : (box._width = box._height);
-
-    return box;
-}
-
-function appendElem(elem) {
-    const div = document.querySelector("#photo--input--container");
-    elem.style.width = "60px";
-    div.appendChild(elem);
+    return output;
 }

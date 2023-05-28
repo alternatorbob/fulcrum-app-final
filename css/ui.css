@@ -124,11 +124,24 @@
     width: 100%;
 }
 
-#detections-overlay {
+.result-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
+}
+
+#image--canvas {
+    position: relative;
+    width: 100%;
+}
+
+#result--canvas {
+    z-index: 10;
+}
+
+#detections--canvas {
+    z-index: 100;
 }
 
 /* OLD */
@@ -139,17 +152,6 @@
     justify-content: center;
     overflow: hidden;
     position: relative;
-}
-
-#image--canvas {
-    position: relative;
-    width: 100%;
-}
-#detections--canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
 }
 
 .hidden {

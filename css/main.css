@@ -55,6 +55,10 @@ body {
     font-size: 1.2em;
 }
 
+canvas {
+    image-rendering: smooth
+}
+
 .text-lg {
     font-family: "Diatype Bold";
     font-size: 1.953em;

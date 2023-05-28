@@ -14,56 +14,13 @@ export function switchView(destination) {
     handleViewChange();
 }
 
-export function drawFaceBox(canvas, box, scaleFactor) {
-    const ctx = canvas.getContext("2d");
-    console.log(box);
-    let { x, y, width, height } = box;
+export function moveCanvasLayers(destination) {
+    const photoContainer = document.querySelector("#photo--input--container");
+    const containerParent = photoContainer.parentNode;
+    const destinationDiv = document.querySelector(`.${destination}`);
 
-    let img = new Image();
-    img.onload = () => {
-        ctx.beginPath();
-        ctx.lineWidth = "1";
-        ctx.strokeStyle = "blue";
-        // ctx.rect(x, y, width, height);
-        // ctx.rect(50, 50, 150, 80);
-        ctx.stroke();
-
-        // x -= width / 10;
-        x -= width / (scaleFactor * 2.66);
-        y -= width / (scaleFactor * 2.66);
-        width *= scaleFactor;
-        height *= scaleFactor;
-
-        // y -= 20 * scaleFactor;
-        // width += 20 * scaleFactor;
-        // height += 20 * scaleFactor;
-        ctx.drawImage(img, x, y, width, height);
-    };
-    img.src = "icons/fulcrum_frame.svg";
-}
-
-export class FaceBox {
-    constructor(canvas, box) {
-        this.canvas = canvas;
-        this.ctx = this.canvas.getContext("2d");
-        this.box = box;
-        this.x = this.box._x;
-        this.y = this.box._y;
-        this.w = this.box._width;
-        this.h = this.box._heigh;
-
-        // this.img = document.createElement("img");
-        this.img = new Image();
-        // this.img.src = "icons/fulcrum_frame.svg";
-        this.img.onload = () => this.drawSVG();
-    }
-
-    drawSVG() {
-        console.log(this.box);
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        console.log(this.img);
-        this.ctx.drawImage(this.img, this.x, this.y, this.w, this.h);
-    }
+    destinationDiv.appendChild(photoContainer);
+    // containerParent.removeChild(photoContainer);
 }
 
 export class CircleAnimation {
