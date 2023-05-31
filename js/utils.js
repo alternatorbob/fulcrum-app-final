@@ -1,17 +1,46 @@
 export function cropCanvas(sourceCanvas, x, y, width, height) {
     const croppedCanvas = document.createElement("canvas");
+
+    // document
+    //     .querySelector("#photo--input--container")
+    //     .appendChild(sourceCanvas);
     // Calculate the new width and height to ensure they are multiples of 8
-    const newWidth = 512;
-    const newHeight = 512;
+    // const newWidth = 512;
+    // const newHeight = 512;
     // const newWidth = Math.ceil(width / 8) * 8;
     // const newHeight = Math.ceil(height / 8) * 8;
-    croppedCanvas.width = newWidth;
-    croppedCanvas.height = newHeight;
+    // croppedCanvas.width = newWidth;
+    // croppedCanvas.height = newHeight;
 
     const ctx = croppedCanvas.getContext("2d");
-    ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, newWidth, newHeight);
+    ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, width, height);
+
+    document.body.appendChild(croppedCanvas);
 
     return croppedCanvas;
+}
+
+export function cropImage(img, x, y, width, height) {
+    // Create a new canvas element
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+
+    // Set the canvas size to match the cropped dimensions
+    canvas.width = width;
+    canvas.height = height;
+
+    // Draw the cropped image onto the canvas
+    ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+
+    // Return the canvas
+    return canvas;
+}
+
+export function drawRectangleOnCanvas(canvas, x, y, width, height) {
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "red"; // Set rectangle color
+
+    ctx.fillRect(x, y, width, height);
 }
 
 export function delay(ms) {
