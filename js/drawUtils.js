@@ -27,7 +27,6 @@ export function updateResult(clear = false) {
 function drawDetectionBox(object) {
     let { _x, _y, _width, _height } = object.detectionBox;
     const ctx = detectionsCanvas.getContext("2d");
-
     let img = new Image();
 
     img.onload = () => {
@@ -67,19 +66,24 @@ function wasDetectionClicked(e) {
     }
 }
 
-export function createCanvasLayers(image) {
+export function createCanvasLayers(image, width, height) {
     const container = document.querySelector("#photo--input--container");
 
     resultCanvas = faceapi.createCanvasFromMedia(image);
     resultCanvas.classList.add("result-layer");
     resultCanvas.id = "result--canvas";
     const resCtx = resultCanvas.getContext("2d");
-    resCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+    resCtx.clearRect(0, 0, width, height);
 
     detectionsCanvas = faceapi.createCanvasFromMedia(image);
-    detectionsCanvas.id = "detections--canvas";
     detectionsCanvas.classList.add("result-layer");
+    detectionsCanvas.id = "detections--canvas";
     detectionsCanvas.addEventListener("click", (e) => wasDetectionClicked(e));
+
+    resultCanvas.width = width;
+    resultCanvas.height = height;
+    detectionsCanvas.width = width;
+    detectionsCanvas.height = height;
 
     container.append(resultCanvas, detectionsCanvas);
 
@@ -114,19 +118,19 @@ function drawEllipse(ctx, x, y, width, height) {
     ctx.ellipse(x, y, width, height, 0, 0, 2 * Math.PI);
 }
 
-export function createMaskCanvas(img, points, id) {
+export function createMaskCanvas(img, width, height, points, id) {
     const container = document.querySelector("#photo--input--container");
     const maskCanvas = document.createElement("canvas");
     maskCanvas.class = `mask--canvas`;
     maskCanvas.id = `mask--canvas--${id}`;
-    maskCanvas.width = img.width;
-    maskCanvas.height = img.height;
+    maskCanvas.width = width;
+    maskCanvas.height = height;
     maskCanvas.classList.add("hidden");
 
     const ctx = maskCanvas.getContext("2d");
     ctx.fillStyle = "white";
     ctx.fill();
-    ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+    ctx.fillRect(0, 0, width, height);
     drawMask(maskCanvas, points);
 
     container.append(maskCanvas);

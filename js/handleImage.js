@@ -12,8 +12,12 @@ export async function onImageUpload(e) {
         img.onload = async () => {
             const canvas = document.querySelector("#image--canvas");
             const ctx = canvas.getContext("2d");
-            canvas.width = img.width;
-            canvas.height = img.height;
+            const aspectRatio = img.width / img.height;
+
+            // canvas.width = window.innerWidth;
+            // canvas.height = canvas.width / aspectRatio;
+            img.width = canvas.width = window.innerWidth;
+            img.height = canvas.height = canvas.width / aspectRatio;
             ctx.save();
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -24,7 +28,5 @@ export async function onImageUpload(e) {
     if (file) {
         reader.readAsDataURL(file);
         getDetections(file);
-        // let myPrompt = await getDetections(file);
-        // swapFace(myPrompt);
     }
 }

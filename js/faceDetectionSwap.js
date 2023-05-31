@@ -25,11 +25,12 @@ function start() {
 }
 
 export async function getDetections(img) {
-    let swappedFaces = [];
-
     const image = await faceapi.bufferToImage(img);
-    const detectionsCanvas = createCanvasLayers(image);
-    const displaySize = { width: image.width, height: image.height };
+    const imageCanvas = document.querySelector("#image--canvas");
+    const { width, height } = imageCanvas;
+    const detectionsCanvas = createCanvasLayers(image, width, height);
+    const displaySize = { width: width, height: height };
+    
     faceapi.matchDimensions(detectionsCanvas, displaySize);
 
     let detections = await faceapi
@@ -63,7 +64,7 @@ export async function getDetections(img) {
 
         //nose = 27-30-35
 
-        const mask = createMaskCanvas(image, points, index);
+        const mask = createMaskCanvas(image, width, height, points, index);
 
         detectionObjects.push({
             image: cropCanvas(image, box._x, box._y, box._width, box._height),
@@ -113,7 +114,13 @@ export async function getDetections(img) {
 
     detectionObjects.forEach(async (object) => {
         const { _x, _y, _width, _height } = object.squareBox;
+        console.log(object.squareBox);
         updateResult();
+
+        // console.log(object.image);
+        // document
+        //     .querySelector("#photo--input--container")
+        //     .appendChild(object.image);
 
         const canvas = cropCanvas(image, _x, _y, _width, _height);
         object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
