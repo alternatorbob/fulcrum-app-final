@@ -30,7 +30,7 @@ export async function getDetections(img) {
     const { width, height } = imageCanvas;
     const detectionsCanvas = createCanvasLayers(image, width, height);
     const displaySize = { width: width, height: height };
-    
+
     faceapi.matchDimensions(detectionsCanvas, displaySize);
 
     let detections = await faceapi
@@ -45,8 +45,8 @@ export async function getDetections(img) {
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
     resizedDetections.forEach(async (result, index) => {
-        const { gender, age } = result;
-        let box = result.detection.box;
+        const { _x, _y, _width, _height } = result.detection.box;
+        const box = result.detection.box;
         const points = result.landmarks.positions;
 
         // points.forEach((point) => {
@@ -67,13 +67,13 @@ export async function getDetections(img) {
         const mask = createMaskCanvas(image, width, height, points, index);
 
         detectionObjects.push({
-            image: cropCanvas(image, box._x, box._y, box._width, box._height),
+            image: cropCanvas(imageCanvas, _x, _y, _width, _height),
             detectionBox: adjustDetectionBoxes(box)[0],
             squareBox: adjustDetectionBoxes(box)[1],
             mask: mask,
             points: points,
-            gender: gender,
-            age: age,
+            gender: result.gender,
+            age: result.age,
             isShowing: true,
         });
 
@@ -113,16 +113,10 @@ export async function getDetections(img) {
     });
 
     detectionObjects.forEach(async (object) => {
-        const { _x, _y, _width, _height } = object.squareBox;
-        console.log(object.squareBox);
         updateResult();
 
-        // console.log(object.image);
-        // document
-        //     .querySelector("#photo--input--container")
-        //     .appendChild(object.image);
-
-        const canvas = cropCanvas(image, _x, _y, _width, _height);
+        const { _x, _y, _width, _height } = object.squareBox;
+        const canvas = cropCanvas(imageCanvas, _x, _y, _width, _height);
         object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
 
         const promptDetails = { gender: object.gender, age: object.age };
@@ -131,9 +125,7 @@ export async function getDetections(img) {
         let swappedFace = await swapFace(canvas, object.mask, myPrompt).then(
             (swappedFace) => {
                 object.result = swappedFace;
-                // appendElem(swappedFace);
                 updateResult();
-                // createCanvasFromImage(swappedFace);
             }
         );
     });

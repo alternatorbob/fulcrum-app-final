@@ -16,6 +16,8 @@ export function updateResult(clear = false) {
 
     if (!clear) {
         detectionObjects.forEach((object) => {
+            console.log("result: ", object.result);
+
             if (object.isShowing) {
                 drawDetectionBox(object);
                 if (object.result !== undefined) drawResult(object);
@@ -220,18 +222,40 @@ export function invertColors(canvas) {
 
     // Create a new canvas element
     const invertedCanvas = document.createElement("canvas");
+    const invertedContext = invertedCanvas.getContext("2d");
     invertedCanvas.width = width;
     invertedCanvas.height = height;
-    const invertedContext = invertedCanvas.getContext("2d");
 
     // Apply the 'invert' filter to invert the colors
-    invertedContext.filter = "blur(20px)";
+    // invertedContext.filter = "blur(20px)";
     // invertedContext.filter = "grayscale(70%)";
-    // invertedContext.filter = "invert(100%)";
+    invertedContext.filter = "invert(100%)";
 
     // Draw the original canvas onto the inverted canvas with the filter applied
     invertedContext.drawImage(canvas, 0, 0);
 
     // Return the inverted canvas
     return invertedCanvas;
+}
+
+export function applyInvertFilterAndRandomSquares(canvas) {
+    const context = canvas.getContext("2d");
+    const { width, height } = canvas;
+
+    // Apply the invert filter to the canvas
+    context.filter = "invert(100%)";
+    context.drawImage(canvas, 0, 0);
+
+    // Generate and draw random squares
+    const numSquares = 5;
+    const squareSize = Math.min(width, height) / 4; // Adjust the size as needed
+    context.fillStyle = "red"; // Set the square color
+
+    for (let i = 0; i < numSquares; i++) {
+        const randomX = Math.random() * (width - squareSize);
+        const randomY = Math.random() * (height - squareSize);
+
+        // Draw the square
+        context.fillRect(randomX, randomY, squareSize, squareSize);
+    }
 }

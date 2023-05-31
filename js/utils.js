@@ -12,28 +12,13 @@ export function cropCanvas(sourceCanvas, x, y, width, height) {
     // croppedCanvas.width = newWidth;
     // croppedCanvas.height = newHeight;
 
+    croppedCanvas.width = width;
+    croppedCanvas.height = height;
+
     const ctx = croppedCanvas.getContext("2d");
     ctx.drawImage(sourceCanvas, x, y, width, height, 0, 0, width, height);
 
-    document.body.appendChild(croppedCanvas);
-
     return croppedCanvas;
-}
-
-export function cropImage(img, x, y, width, height) {
-    // Create a new canvas element
-    var canvas = document.createElement("canvas");
-    var ctx = canvas.getContext("2d");
-
-    // Set the canvas size to match the cropped dimensions
-    canvas.width = width;
-    canvas.height = height;
-
-    // Draw the cropped image onto the canvas
-    ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
-
-    // Return the canvas
-    return canvas;
 }
 
 export function drawRectangleOnCanvas(canvas, x, y, width, height) {
