@@ -23,6 +23,39 @@ export function moveCanvasLayers(destination) {
     // containerParent.removeChild(photoContainer);
 }
 
+export class EditMessage {
+    constructor() {
+        this.messageDiv = document.createElement("div");
+        this.messageDiv.id = "#message--div";
+        this.messageDiv.innerText = "Touch a face to edit";
+        this.messageDiv.style = `
+            position: absolute;
+            border-radius: 4px;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 10%;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        document
+            .querySelector("#photo--input--container")
+            .appendChild(this.messageDiv);
+    }
+
+    show() {
+        this.messageDiv.classList.remove("hidden");
+    }
+
+    hide() {
+        this.messageDiv.classList.add("hidden");
+    }
+}
+
 export class Loader {
     constructor() {
         this.loaderDiv = document.createElement("div");

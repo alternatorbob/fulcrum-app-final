@@ -6,6 +6,7 @@ import {
     adjustDetectionBoxes,
     invertColors,
     updateResult,
+    applyInvertFilterAndRandomSquares,
 } from "./drawUtils";
 import { cropCanvas, appendElem } from "./utils";
 import { inPaint } from "./replicate";
@@ -74,7 +75,8 @@ export async function getDetections(img) {
             points: points,
             gender: result.gender,
             age: result.age,
-            isShowing: true,
+            isShowing: { detection: true, result: false },
+            id: index,
         });
 
         /*
@@ -117,10 +119,12 @@ export async function getDetections(img) {
 
         const { _x, _y, _width, _height } = object.squareBox;
         const canvas = cropCanvas(imageCanvas, _x, _y, _width, _height);
+        object.canvas = canvas;
         object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
 
         const promptDetails = { gender: object.gender, age: object.age };
         let myPrompt = getPrompt(promptDetails);
+        object.myPrompt = myPrompt;
 
         let swappedFace = await swapFace(canvas, object.mask, myPrompt).then(
             (swappedFace) => {
@@ -131,11 +135,15 @@ export async function getDetections(img) {
     });
 }
 
-async function swapFace(canvas, mask, myPrompt) {
+export async function swapFace(canvas, mask, myPrompt) {
     const canvas64 = canvas.toDataURL();
-    const mask64 = mask.toDataURL();
+    let mask64;
+    if (mask) {
+        mask64 = mask.toDataURL();
+    }
 
     const output = invertColors(canvas);
+    // const output = applyInvertFilterAndRandomSquares(canvas);
 
     // const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
     //     const lines = value.split("\n").filter(Boolean);

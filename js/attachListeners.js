@@ -1,6 +1,7 @@
 import { handleViewChange } from "../main";
+import { updateResult, activeObject, regenerateFace } from "./drawUtils";
 import { onImageUpload } from "./handleImage";
-import { activeView, switchView, moveCanvasLayers } from "./ui";
+import { activeView, switchView, moveCanvasLayers, EditMessage } from "./ui";
 
 export function attachListeners() {
     //home
@@ -17,6 +18,7 @@ export function attachListeners() {
 
     editButton.addEventListener("click", () => {
         switchView("edit");
+        updateResult();
         moveCanvasLayers("edit");
     });
 
@@ -58,6 +60,7 @@ export function attachListeners() {
                 case "edit":
                     switchView("result");
                     moveCanvasLayers("result");
+                    updateResult();
                     break;
 
                 case "edit-prompt":
@@ -70,10 +73,15 @@ export function attachListeners() {
     //edit
     const popupContainer = document.querySelector(".popup-container");
     const promptButton = document.querySelector("#prompt-button");
+    const regenerateButton = document.querySelector("#regenerate-button");
 
     promptButton.addEventListener("click", async () => {
         popupContainer.classList.add("active");
         activeView = "edit-prompt";
         handleViewChange();
+    });
+
+    regenerateButton.addEventListener("click", () => {
+        regenerateFace(activeObject);
     });
 }

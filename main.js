@@ -1,5 +1,5 @@
 import { attachListeners } from "./js/attachListeners";
-import { activeView, moveCanvasLayers } from "./js/ui";
+import { activeView, EditMessage, moveCanvasLayers } from "./js/ui";
 
 export function handleViewChange() {
     switch (activeView) {
@@ -14,6 +14,9 @@ export function handleViewChange() {
 
         case "edit":
             console.log(`Current View: ${activeView}`);
+
+            const editMessage = new EditMessage();
+            editMessage.show();
             break;
 
         case "edit-prompt":
