@@ -75,7 +75,7 @@ export async function getDetections(img) {
             points: points,
             gender: result.gender,
             age: result.age,
-            isShowing: { detection: true, result: false },
+            isShowing: { detection: true, result: true },
             id: index,
         });
 

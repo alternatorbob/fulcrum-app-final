@@ -68,3 +68,15 @@ export function appendElem(elem) {
     elem.style.width = "60px";
     div.appendChild(elem);
 }
+
+export function isInArray(array, id) {
+    return array.some((obj) => obj.id === id);
+}
+
+export function removeFromArray(array, idToRemove) {
+    const indexToRemove = array.findIndex((obj) => obj.id === idToRemove);
+
+    if (indexToRemove !== -1) {
+        array.splice(indexToRemove, 1);
+    }
+}

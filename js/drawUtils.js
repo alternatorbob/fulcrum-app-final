@@ -1,5 +1,10 @@
 import * as faceapi from "face-api.js";
-import { pushValues, distanceBetweenPoints } from "./utils";
+import {
+    pushValues,
+    distanceBetweenPoints,
+    isInArray,
+    removeFromArray,
+} from "./utils";
 import { detectionObjects, swapFace } from "./faceDetectionSwap";
 
 import { activeView } from "./ui";
@@ -9,6 +14,7 @@ import { activeView } from "./ui";
 let pointIndexes = pushValues(17, 26).concat([64, 55, 56, 57, 58, 59, 60, 17]);
 let resultCanvas, detectionsCanvas;
 export let activeObject;
+export let hiddenDetectionObjects = [];
 
 export function updateResult(clear = false, regenerate = false) {
     const resCtx = resultCanvas.getContext("2d");
@@ -20,7 +26,25 @@ export function updateResult(clear = false, regenerate = false) {
     if (clear) return;
 
     detectionObjects.forEach((object) => {
-        if (activeView == "edit") {
+        if (activeView == "result") {
+            if (
+                !object.isShowing.detection &&
+                !object.isShowing.result &&
+                !isInArray(hiddenDetectionObjects, object.id)
+            ) {
+                hiddenDetectionObjects.push(object);
+            }
+
+            if (object.isShowing.detection) {
+                drawDetectionBox(object);
+
+                if (object.result !== undefined) {
+                    drawResult(object);
+                }
+            }
+        } else if (activeView == "edit") {
+            if (!object.isShowing.detection && !object.isShowing.result) return;
+
             drawResult(object);
             detCtx.clearRect(
                 0,
@@ -32,14 +56,6 @@ export function updateResult(clear = false, regenerate = false) {
             if (!object.isShowing.detection) {
                 drawDetectionBox(object);
                 object.isShowing.detection = true;
-            }
-        } else {
-            if (object.isShowing.detection) {
-                drawDetectionBox(object);
-
-                if (object.result !== undefined) {
-                    drawResult(object);
-                }
             }
         }
     });
@@ -69,7 +85,6 @@ function wasDetectionClicked(e) {
         return;
     }
 
-    console.log(e.offsetX, e.offsetY);
     detectionObjects.forEach((object, index) => {
         const { _x, _y, _width, _height } = object.detectionBox;
         if (
@@ -78,20 +93,26 @@ function wasDetectionClicked(e) {
             e.offsetY > _y &&
             e.offsetY < _y + _height
         ) {
-            object.isShowing.detection = !object.isShowing.detection;
-            object.isShowing.result = !object.isShowing.result;
+            if (activeView == "result") {
+                if (isInArray(hiddenDetectionObjects, object.id))
+                    removeFromArray(hiddenDetectionObjects, object.id);
+                object.isShowing.detection = !object.isShowing.detection;
+                object.isShowing.result = !object.isShowing.result;
+                //if it is in the hiddenDecteionObjects array we remove it
 
-            console.log(
-                "detection: ",
-                object.isShowing.detection,
-                "result:",
-                object.isShowing.result
-            );
+                updateResult();
+            } else if (
+                activeView == "edit" &&
+                !isInArray(hiddenDetectionObjects, object.id)
+            ) {
+                //check if obj
+                console.log(object.id);
+                object.isShowing.detection = !object.isShowing.detection;
+                updateResult();
+            }
             // console.log("TOUCH BOX");
-
             activeObject = detectionObjects[object.id];
-
-            updateResult();
+            // console.log(activeObject);
             return true;
         }
     });
