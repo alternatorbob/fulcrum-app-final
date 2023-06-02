@@ -29,7 +29,7 @@ export default async (req, res) => {
         });
     });
 
-    console.log(data.fields);
+    // console.log(data.fields);
 
     const response = await fetch(`${API_HOST}/v1/predictions`, {
         method: "POST",

@@ -21,6 +21,15 @@ export function cropCanvas(sourceCanvas, x, y, width, height) {
     return croppedCanvas;
 }
 
+export function resizeCanvas(sourceCanvas, width, height) {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(sourceCanvas, 0, 0, width, height);
+    return canvas;
+}
+
 export function drawRectangleOnCanvas(canvas, x, y, width, height) {
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "red"; // Set rectangle color
@@ -79,4 +88,13 @@ export function removeFromArray(array, idToRemove) {
     if (indexToRemove !== -1) {
         array.splice(indexToRemove, 1);
     }
+}
+
+export function loadImage(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+    });
 }

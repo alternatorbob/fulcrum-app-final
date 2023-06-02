@@ -8,7 +8,7 @@ import {
     updateResult,
     applyInvertFilterAndRandomSquares,
 } from "./drawUtils";
-import { cropCanvas, appendElem } from "./utils";
+import { cropCanvas, appendElem, delay, resizeCanvas, loadImage } from "./utils";
 import { inPaint } from "./replicate";
 import { getPrompt } from "./getPrompt";
 
@@ -114,25 +114,28 @@ export async function getDetections(img) {
         */
     });
 
-    detectionObjects.forEach(async (object) => {
+    const renders = detectionObjects.map(async (object, index) => {
         updateResult();
 
+        const size = 512;
         const { _x, _y, _width, _height } = object.squareBox;
-        const canvas = cropCanvas(imageCanvas, _x, _y, _width, _height);
+        const canvas = resizeCanvas(cropCanvas(imageCanvas, _x, _y, _width, _height), size, size);
+
         object.canvas = canvas;
-        object.mask = cropCanvas(object.mask, _x, _y, _width, _height);
+        object.mask = resizeCanvas(cropCanvas(object.mask, _x, _y, _width, _height), size, size);
 
         const promptDetails = { gender: object.gender, age: object.age };
         let myPrompt = getPrompt(promptDetails);
         object.myPrompt = myPrompt;
 
-        let swappedFace = await swapFace(canvas, object.mask, myPrompt).then(
+        return await swapFace(canvas, object.mask, myPrompt).then(
             (swappedFace) => {
                 object.result = swappedFace;
                 updateResult();
             }
         );
     });
+
 }
 
 export async function swapFace(canvas, mask, myPrompt) {
@@ -142,21 +145,19 @@ export async function swapFace(canvas, mask, myPrompt) {
         mask64 = mask.toDataURL();
     }
 
-    const output = invertColors(canvas);
+
+    console.log("inpain", canvas.width, canvas.height);
+    // const output = invertColors(canvas);
     // const output = applyInvertFilterAndRandomSquares(canvas);
 
-    // const output = await inPaint(canvas64, mask64, myPrompt, (value) => {
-    //     const lines = value.split("\n").filter(Boolean);
-    //     const lastLine = lines[lines.length - 1];
-    //     let number = 0;
-    //     if (lastLine) number = Number(lastLine.split("%")[0]);
-    //     // console.log("number: ", number);
-    //     console.log("value: ", value);
-    // });
+    const url = await inPaint(canvas64, mask64, myPrompt, (value) => {
+        const lines = value.split("\n").filter(Boolean);
+        const lastLine = lines[lines.length - 1];
+        let number = 0;
+        if (lastLine) number = Number(lastLine.split("%")[0]);
+        // console.log("number: ", number);
+        console.log("value: ", value);
+    });
 
-    const img = new Image();
-    img.src = output;
-    // img.src = canvas;
-
-    return output;
+    return loadImage(url);
 }
