@@ -1,6 +1,8 @@
 import { attachListeners } from "./js/attachListeners";
 import { activeView, EditMessage, moveCanvasLayers } from "./js/ui";
 import { hiddenDetectionObjects } from "./js/drawUtils";
+const editMessage = new EditMessage();
+// editMessage.hide();
 
 export function handleViewChange() {
     switch (activeView) {
@@ -11,6 +13,7 @@ export function handleViewChange() {
         case "result":
             console.log(`Current View: ${activeView}`);
             console.log(hiddenDetectionObjects);
+            editMessage.hide();
 
             // moveCanvasLayers("result");
             break;
@@ -19,7 +22,6 @@ export function handleViewChange() {
             console.log(`Current View: ${activeView}`);
             console.log(hiddenDetectionObjects);
 
-            const editMessage = new EditMessage();
             editMessage.show();
             break;
 

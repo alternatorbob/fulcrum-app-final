@@ -5,7 +5,7 @@ export async function inPaint(canvas64, mask64, prompt, progressCB) {
     const formData = new FormData();
     //prompt gets age and gender and is generated here
 
-    const size = 64;
+    const size = 256;
 
     formData.append("prompt", prompt);
     // formData.append("num_inference_steps integer", 1);

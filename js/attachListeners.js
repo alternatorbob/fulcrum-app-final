@@ -77,7 +77,8 @@ export function attachListeners() {
 
     promptButton.addEventListener("click", async () => {
         popupContainer.classList.add("active");
-        activeView = "edit-prompt";
+        // activeView = "edit-prompt";
+        switchView("edit-prompt")
         handleViewChange();
     });
 

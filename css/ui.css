@@ -154,10 +154,6 @@
     position: relative;
 }
 
-.hidden {
-    display: none;
-}
-
 .loader {
     position: relative;
     display: flex;

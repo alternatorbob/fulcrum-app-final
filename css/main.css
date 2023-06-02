@@ -53,10 +53,12 @@ body {
     color: #f5f5f5;
     font-family: "Diatype Regular";
     font-size: 1.2em;
+
+    touch-action: manipulation;
 }
 
 canvas {
-    image-rendering: smooth
+    image-rendering: smooth;
 }
 
 .text-lg {

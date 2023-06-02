@@ -53,6 +53,7 @@ export class EditMessage {
 
     hide() {
         this.messageDiv.classList.add("hidden");
+        console.log("should be hidden");
     }
 }
 
