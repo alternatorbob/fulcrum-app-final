@@ -16,9 +16,12 @@ let resultCanvas, detectionsCanvas;
 export let activeObject;
 export let hiddenDetectionObjects = [];
 
+function clearCanvas(canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 export function updateResult(clear = false, regenerate = false) {
-
-
     console.log("updateResult");
     const resCtx = resultCanvas.getContext("2d");
     const detCtx = detectionsCanvas.getContext("2d");
@@ -29,7 +32,6 @@ export function updateResult(clear = false, regenerate = false) {
     if (clear) return;
 
     detectionObjects.forEach((object) => {
-
         if (activeView == "result") {
             if (
                 !object.isShowing.detection &&
