@@ -1,17 +1,27 @@
-import { handleViewChange } from "../main";
+import { updateView } from "../main";
 export let activeView = "home";
 
-export function switchView(destination) {
-    if (activeView == "edit-prompt") {
-        document.querySelector(".popup-container").classList.remove("active");
-    } else {
-        let viewSelector = document.querySelector(`.${activeView}`);
-        viewSelector.classList.add("hidden");
-        viewSelector = document.querySelector(`.${destination}`);
-        viewSelector.classList.remove("hidden");
-    }
-    activeView = destination;
-    handleViewChange();
+// export function switchView(content) {
+//     const destination = content.activeView;
+//     let viewSelector = document.querySelector(`.${activeView}`);
+
+//     viewSelector.classList.add("hidden");
+//     viewSelector = document.querySelector(`.${destination}`);
+//     viewSelector.classList.remove("hidden");
+
+//     activeView = destination;
+
+//     updateView(content);
+// }
+
+export function switchView(activeView, destination) {
+    const activeViewElement = document.querySelector(`.${activeView}`);
+    const destinationElement = document.querySelector(`.${destination}`);
+
+    activeViewElement.classList.add("hidden");
+    destinationElement.classList.remove("hidden");
+
+    updateView(destination);
 }
 
 export function moveCanvasLayers(destination) {

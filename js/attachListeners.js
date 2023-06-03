@@ -1,5 +1,5 @@
-import { handleViewChange } from "../main";
-import { updateResult, activeObject, regenerateFace } from "./drawUtils";
+import { updateView } from "../main";
+import { regenerateFace } from "./drawUtils";
 import { onImageUpload } from "./handleImage";
 import { activeView, switchView, moveCanvasLayers, EditMessage } from "./ui";
 
@@ -9,7 +9,6 @@ export function attachListeners() {
     inputElement.addEventListener("change", async (event) => {
         // imageResult = await handleImageUpload(event);
         await onImageUpload(event);
-        switchView("result");
     });
 
     //result
@@ -17,13 +16,12 @@ export function attachListeners() {
     const backButton = document.querySelector("#back-button");
 
     editButton.addEventListener("click", () => {
-        switchView("edit");
-        updateResult();
+        switchView("result", "edit");
         moveCanvasLayers("edit");
     });
 
     backButton.addEventListener("click", () => {
-        switchView("home");
+        switchView("result", "home");
     });
 
     const downloadButton = document.querySelector("#download-button");
@@ -36,11 +34,11 @@ export function attachListeners() {
         button.addEventListener("click", () => {
             switch (activeView) {
                 case "result":
-                    switchView("home");
+                    switchView("result", "home");
                     break;
 
                 case "edit":
-                    switchView("result");
+                    switchView("edit", "result");
                     moveCanvasLayers("result");
                     break;
                 case "edit-prompt":
@@ -49,18 +47,23 @@ export function attachListeners() {
             }
         });
     });
+
     const doneButtons = document.querySelectorAll(".done-button");
     doneButtons.forEach((button) => {
         button.addEventListener("click", () => {
+            console.log("done");
+            console.log(activeView);
             switch (activeView) {
                 case "result":
-                    switchView("home");
+                    switchView("result", "home");
+                    console.log("done result");
                     break;
 
                 case "edit":
-                    switchView("result");
+                    console.log("should switch to edit");
+                    switchView("edit", "result");
                     moveCanvasLayers("result");
-                    updateResult();
+
                     break;
 
                 case "edit-prompt":
@@ -79,10 +82,10 @@ export function attachListeners() {
         popupContainer.classList.add("active");
         // activeView = "edit-prompt";
         switchView("edit-prompt");
-        handleViewChange();
+        updateView();
     });
 
-    regenerateButton.addEventListener("click", () => {
-        regenerateFace(activeObject);
-    });
+    // regenerateButton.addEventListener("click", () => {
+    //     regenerateFace(activeObject);
+    // });
 }

@@ -1,7 +1,12 @@
+import * as faceapi from "face-api.js";
 import { getDetections } from "./faceDetectionSwap";
-import { Loader } from "./ui";
+import { Loader, switchView } from "./ui";
+import { createCanvasLayers } from "./drawUtils";
+import { updateView } from "../main";
 
 export async function onImageUpload(e) {
+    const canvas = document.querySelector("#image--canvas");
+
     const file = e.target.files[0];
     const reader = new FileReader();
     const loader = new Loader();
@@ -10,7 +15,6 @@ export async function onImageUpload(e) {
     reader.onload = (e) => {
         const img = new Image();
         img.onload = async () => {
-            const canvas = document.querySelector("#image--canvas");
             const ctx = canvas.getContext("2d");
             const aspectRatio = img.width / img.height;
 
@@ -27,6 +31,20 @@ export async function onImageUpload(e) {
     };
     if (file) {
         reader.readAsDataURL(file);
-        getDetections(file);
+        const image = await faceapi.bufferToImage(file);
+        const { width, height } = canvas;
+
+        const canvases = createCanvasLayers(image, width, height);
+        await getDetections(image, canvases.detectionCanvas).then(
+            (detectionObjects) => {
+                // const content = {
+                //     activeView: "result",
+                //     detectionObjects: detectionObjects,
+                //     canvases: canvases,
+                //     event: null,
+                // };
+                switchView("home", "result");
+            }
+        );
     }
 }

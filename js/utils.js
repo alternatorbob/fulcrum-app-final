@@ -30,6 +30,18 @@ export function resizeCanvas(sourceCanvas, width, height) {
     return canvas;
 }
 
+export function clearCanvas(canvases) {
+    Array.isArray(canvases)
+        ? canvases.forEach((canvas) => {
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+          })
+        : (() => {
+              const ctx = canvases.getContext("2d");
+              ctx.clearRect(0, 0, canvases.width, canvases.height);
+          })();
+}
+
 export function drawRectangleOnCanvas(canvas, x, y, width, height) {
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "red"; // Set rectangle color

@@ -4,126 +4,69 @@ import {
     distanceBetweenPoints,
     isInArray,
     removeFromArray,
+    clearCanvas,
 } from "./utils";
-import { detectionObjects, swapFace } from "./faceDetectionSwap";
+import { swapFace, detectionObjects } from "./faceDetectionSwap";
 
 import { activeView } from "./ui";
+import { updateView } from "../main";
 // let pointIndexes = pushValues(17, 26).concat([
 //     45, 64, 55, 56, 57, 58, 59, 60, 36, 17,
 // ]);
 let pointIndexes = pushValues(17, 26).concat([64, 55, 56, 57, 58, 59, 60, 17]);
-let resultCanvas, detectionsCanvas;
-export let activeObject;
-export let hiddenDetectionObjects = [];
+let resultCanvas, detectionCanvas;
 
-function clearCanvas(canvas) {
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+export function drawDetectionBoxes(objects) {
+    objects.forEach((object) => {
+        if (!object.isShowing.detection) return;
 
-export function updateResult(clear = false, regenerate = false) {
-    console.log("updateResult");
-    const resCtx = resultCanvas.getContext("2d");
-    const detCtx = detectionsCanvas.getContext("2d");
+        let { _x, _y, _width, _height } = object.detectionBox;
+        const ctx = detectionCanvas.getContext("2d");
+        let img = new Image();
 
-    resCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
-    detCtx.clearRect(0, 0, detectionsCanvas.width, detectionsCanvas.height);
-
-    if (clear) return;
-
-    detectionObjects.forEach((object) => {
-        if (activeView == "result") {
-            if (
-                !object.isShowing.detection &&
-                !object.isShowing.result &&
-                !isInArray(hiddenDetectionObjects, object.id)
-            ) {
-                hiddenDetectionObjects.push(object);
-            }
-
-            if (object.isShowing.detection) {
-                drawDetectionBox(object);
-
-                if (object.result !== undefined) {
-                    drawResult(object);
-                }
-            }
-        } else if (activeView == "edit") {
-            if (!object.isShowing.detection && !object.isShowing.result) return;
-
-            drawResult(object);
-            detCtx.clearRect(
-                0,
-                0,
-                detectionsCanvas.width,
-                detectionsCanvas.height
-            );
-
-            if (!object.isShowing.detection) {
-                drawDetectionBox(object);
-                object.isShowing.detection = true;
-            }
-        }
+        img.onload = () => {
+            ctx.drawImage(img, _x, _y, _width, _height);
+        };
+        img.src = "icons/fulcrum_frame.svg";
     });
 }
 
-function drawDetectionBox(object) {
-    let { _x, _y, _width, _height } = object.detectionBox;
-    const ctx = detectionsCanvas.getContext("2d");
-    let img = new Image();
+export function drawResults(objects) {
+    objects.forEach((object) => {
+        if (!object.isShowing.result) return;
 
-    img.onload = () => {
-        ctx.drawImage(img, _x, _y, _width, _height);
-    };
+        const { _x, _y, _width, _height } = object.squareBox;
+        const ctx = resultCanvas.getContext("2d");
 
-    img.src = "icons/fulcrum_frame.svg";
+        ctx.drawImage(object.result, _x, _y, _width, _height);
+    });
 }
 
-export function drawResult(object) {
-    const { _x, _y, _width, _height } = object.squareBox;
-    const ctx = resultCanvas.getContext("2d");
-
-    ctx.drawImage(object.result, _x, _y, _width, _height);
-}
-
-function wasDetectionClicked(e) {
-    if (!detectionObjects || detectionObjects.length === 0) {
-        return;
-    }
-
-    detectionObjects.forEach((object, index) => {
+export function wasDetectionClicked(e) {
+    detectionObjects.forEach((object) => {
         const { _x, _y, _width, _height } = object.detectionBox;
+
         if (
             e.offsetX > _x &&
             e.offsetX < _x + _width &&
             e.offsetY > _y &&
             e.offsetY < _y + _height
         ) {
-            if (activeView == "result") {
-                if (isInArray(hiddenDetectionObjects, object.id))
-                    removeFromArray(hiddenDetectionObjects, object.id);
-                object.isShowing.detection = !object.isShowing.detection;
-                object.isShowing.result = !object.isShowing.result;
-                //if it is in the hiddenDecteionObjects array we remove it
-
-                updateResult();
-            } else if (
-                activeView == "edit" &&
-                !isInArray(hiddenDetectionObjects, object.id)
-            ) {
-                //check if obj
-                console.log(object.id);
-                object.isShowing.detection = !object.isShowing.detection;
-                updateResult();
-            }
-            // console.log("TOUCH BOX");
-            activeObject = detectionObjects[object.id];
-            // console.log(activeObject);
+            object.isShowing.detection = !object.isShowing.detection;
+            object.isShowing.result = !object.isShowing.result;
+            console.log("TOUCH BOX");
             return true;
+        } else {
+            return false;
         }
     });
+    updateCanvases(detectionObjects);
+}
 
-    return false;
+export function updateCanvases(detectionObjects) {
+    clearCanvas([resultCanvas, detectionCanvas]);
+    drawDetectionBoxes(detectionObjects);
+    drawResults(detectionObjects);
 }
 
 export async function regenerateFace(object) {
@@ -131,7 +74,7 @@ export async function regenerateFace(object) {
     let swappedFace = await swapFace(canvas, mask, myPrompt).then(
         (swappedFace) => {
             object.result = swappedFace;
-            updateResult();
+            updateCanvases();
         }
     );
 }
@@ -145,19 +88,21 @@ export function createCanvasLayers(image, width, height) {
     const resCtx = resultCanvas.getContext("2d");
     resCtx.clearRect(0, 0, width, height);
 
-    detectionsCanvas = faceapi.createCanvasFromMedia(image);
-    detectionsCanvas.classList.add("result-layer");
-    detectionsCanvas.id = "detections--canvas";
-    detectionsCanvas.addEventListener("click", (e) => wasDetectionClicked(e));
+    detectionCanvas = faceapi.createCanvasFromMedia(image);
+    detectionCanvas.classList.add("result-layer");
+    detectionCanvas.id = "detections--canvas";
+    detectionCanvas.addEventListener("click", (e) => {
+        wasDetectionClicked(e);
+    });
 
     resultCanvas.width = width;
     resultCanvas.height = height;
-    detectionsCanvas.width = width;
-    detectionsCanvas.height = height;
+    detectionCanvas.width = width;
+    detectionCanvas.height = height;
 
-    container.append(resultCanvas, detectionsCanvas);
+    container.append(resultCanvas, detectionCanvas);
 
-    return detectionsCanvas;
+    return { detectionCanvas, resultCanvas };
 }
 
 export function adjustDetectionBoxes(box) {
@@ -319,26 +264,4 @@ export function invertColors(canvas) {
 
     // Return the inverted canvas
     return invertedCanvas;
-}
-
-export function applyInvertFilterAndRandomSquares(canvas) {
-    const context = canvas.getContext("2d");
-    const { width, height } = canvas;
-
-    // Apply the invert filter to the canvas
-    context.filter = "invert(100%)";
-    context.drawImage(canvas, 0, 0);
-
-    // Generate and draw random squares
-    const numSquares = 5;
-    const squareSize = Math.min(width, height) / 4; // Adjust the size as needed
-    context.fillStyle = "red"; // Set the square color
-
-    for (let i = 0; i < numSquares; i++) {
-        const randomX = Math.random() * (width - squareSize);
-        const randomY = Math.random() * (height - squareSize);
-
-        // Draw the square
-        context.fillRect(randomX, randomY, squareSize, squareSize);
-    }
 }

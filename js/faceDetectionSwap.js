@@ -2,11 +2,8 @@ import * as faceapi from "face-api.js";
 import { CircleAnimation, Loader } from "./ui";
 import {
     createMaskCanvas,
-    createCanvasLayers,
     adjustDetectionBoxes,
     invertColors,
-    updateResult,
-    applyInvertFilterAndRandomSquares,
 } from "./drawUtils";
 import {
     cropCanvas,
@@ -32,14 +29,12 @@ function start() {
     console.log("models were loaded");
 }
 
-export async function getDetections(img) {
-    const image = await faceapi.bufferToImage(img);
+export async function getDetections(image, detectionCanvas) {
     const imageCanvas = document.querySelector("#image--canvas");
     const { width, height } = imageCanvas;
-    const detectionsCanvas = createCanvasLayers(image, width, height);
     const displaySize = { width: width, height: height };
 
-    faceapi.matchDimensions(detectionsCanvas, displaySize);
+    faceapi.matchDimensions(detectionCanvas, displaySize);
 
     let detections = await faceapi
         .detectAllFaces(image)
@@ -64,9 +59,9 @@ export async function getDetections(img) {
         // });
 
         //draws face boxes
-        // faceapi.draw.drawDetections(detectionsCanvas, result);
+        // faceapi.draw.drawDetections(detectionCanvas, result);
         //draws face landmarks
-        // faceapi.draw.drawFaceLandmarks(detectionsCanvas, result, {
+        // faceapi.draw.drawFaceLandmarks(detectionCanvas, result, {
         //     drawLines: true,
         // });
 
@@ -89,41 +84,39 @@ export async function getDetections(img) {
         /*
         //brow left
         //brow left
-        highlightPoints(detectionsCanvas, points[17]);
-        highlightPoints(detectionsCanvas, points[21]);
+        highlightPoints(detectionCanvas, points[17]);
+        highlightPoints(detectionCanvas, points[21]);
 
         //brow right
-        highlightPoints(detectionsCanvas, points[22]);
-        highlightPoints(detectionsCanvas, points[26]);
+        highlightPoints(detectionCanvas, points[22]);
+        highlightPoints(detectionCanvas, points[26]);
 
         //nose top
-        highlightPoints(detectionsCanvas, points[27]);
-        // highlightPoints(detectionsCanvas, points[35]);
+        highlightPoints(detectionCanvas, points[27]);
+        // highlightPoints(detectionCanvas, points[35]);
 
         //left eye outer
-        highlightPoints(detectionsCanvas, points[36]);
+        highlightPoints(detectionCanvas, points[36]);
         //left eye center
-        highlightPoints(detectionsCanvas, points[38]);
+        highlightPoints(detectionCanvas, points[38]);
         
         //righ eye outer
-        highlightPoints(detectionsCanvas, points[45]);
+        highlightPoints(detectionCanvas, points[45]);
         //righ eye middle
-        highlightPoints(detectionsCanvas, points[44]);
+        highlightPoints(detectionCanvas, points[44]);
 
         //mouth left
-        highlightPoints(detectionsCanvas, points[60]);
+        highlightPoints(detectionCanvas, points[60]);
         //mouth right
-        highlightPoints(detectionsCanvas, points[64]);
+        highlightPoints(detectionCanvas, points[64]);
         //mout middle middle
-        highlightPoints(detectionsCanvas, points[66]);
+        highlightPoints(detectionCanvas, points[66]);
         //mouth middle bottom
-        highlightPoints(detectionsCanvas, points[57]);
+        highlightPoints(detectionCanvas, points[57]);
         */
     });
 
     const renders = detectionObjects.map(async (object, index) => {
-        updateResult();
-
         const size = 512;
         const { _x, _y, _width, _height } = object.squareBox;
         const canvas = resizeCanvas(
@@ -131,6 +124,8 @@ export async function getDetections(img) {
             size,
             size
         );
+
+        // console.log("renders", renders);
 
         object.canvas = canvas;
         object.mask = resizeCanvas(
@@ -146,10 +141,11 @@ export async function getDetections(img) {
         return await swapFace(canvas, object.mask, myPrompt).then(
             (swappedFace) => {
                 object.result = swappedFace;
-                updateResult();
             }
         );
     });
+
+    return detectionObjects;
 }
 
 export async function swapFace(canvas, mask, myPrompt) {
@@ -161,9 +157,11 @@ export async function swapFace(canvas, mask, myPrompt) {
 
     // const output = invertColors(canvas);
     let output;
-    let loader = await emulateLoader(10000, 500).then(() => {
-        output = invertColors(canvas);
-    });
+    // let loader = await emulateLoader(10000, 500).then(() => {
+    //     output = invertColors(canvas);
+    // });
+
+    output = invertColors(canvas);
 
     // const output = applyInvertFilterAndRandomSquares(canvas);
 
