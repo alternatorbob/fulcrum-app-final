@@ -12,17 +12,18 @@ export function handleViewChange() {
 
         case "result":
             console.log(`Current View: ${activeView}`);
-            console.log(hiddenDetectionObjects);
-            editMessage.hide();
+            // console.log(hiddenDetectionObjects);
+            // editMessage.hide();
 
             // moveCanvasLayers("result");
+
             break;
 
         case "edit":
             console.log(`Current View: ${activeView}`);
-            console.log(hiddenDetectionObjects);
+            // console.log(hiddenDetectionObjects);
 
-            editMessage.show();
+            // editMessage.show();
             break;
 
         case "edit-prompt":

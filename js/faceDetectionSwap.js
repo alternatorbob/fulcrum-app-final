@@ -8,7 +8,14 @@ import {
     updateResult,
     applyInvertFilterAndRandomSquares,
 } from "./drawUtils";
-import { cropCanvas, appendElem, delay, resizeCanvas, loadImage } from "./utils";
+import {
+    cropCanvas,
+    appendElem,
+    delay,
+    resizeCanvas,
+    loadImage,
+    emulateLoader,
+} from "./utils";
 import { inPaint } from "./replicate";
 import { getPrompt } from "./getPrompt";
 
@@ -119,10 +126,18 @@ export async function getDetections(img) {
 
         const size = 512;
         const { _x, _y, _width, _height } = object.squareBox;
-        const canvas = resizeCanvas(cropCanvas(imageCanvas, _x, _y, _width, _height), size, size);
+        const canvas = resizeCanvas(
+            cropCanvas(imageCanvas, _x, _y, _width, _height),
+            size,
+            size
+        );
 
         object.canvas = canvas;
-        object.mask = resizeCanvas(cropCanvas(object.mask, _x, _y, _width, _height), size, size);
+        object.mask = resizeCanvas(
+            cropCanvas(object.mask, _x, _y, _width, _height),
+            size,
+            size
+        );
 
         const promptDetails = { gender: object.gender, age: object.age };
         let myPrompt = getPrompt(promptDetails);
@@ -135,7 +150,6 @@ export async function getDetections(img) {
             }
         );
     });
-
 }
 
 export async function swapFace(canvas, mask, myPrompt) {
@@ -145,19 +159,23 @@ export async function swapFace(canvas, mask, myPrompt) {
         mask64 = mask.toDataURL();
     }
 
-
-    console.log("inpain", canvas.width, canvas.height);
     // const output = invertColors(canvas);
-    // const output = applyInvertFilterAndRandomSquares(canvas);
-
-    const url = await inPaint(canvas64, mask64, myPrompt, (value) => {
-        const lines = value.split("\n").filter(Boolean);
-        const lastLine = lines[lines.length - 1];
-        let number = 0;
-        if (lastLine) number = Number(lastLine.split("%")[0]);
-        // console.log("number: ", number);
-        console.log("value: ", value);
+    let output;
+    let loader = await emulateLoader(10000, 500).then(() => {
+        output = invertColors(canvas);
     });
 
-    return loadImage(url);
+    // const output = applyInvertFilterAndRandomSquares(canvas);
+
+    // const url = await inPaint(canvas64, mask64, myPrompt, (value) => {
+    //     const lines = value.split("\n").filter(Boolean);
+    //     const lastLine = lines[lines.length - 1];
+    //     let number = 0;
+    //     if (lastLine) number = Number(lastLine.split("%")[0]);
+    //     // console.log("number: ", number);
+    //     console.log("value: ", value);
+    // });
+
+    // return loadImage(url);
+    return output;
 }

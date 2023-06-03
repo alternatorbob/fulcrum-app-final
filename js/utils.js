@@ -98,3 +98,29 @@ export function loadImage(url) {
         img.onerror = reject;
     });
 }
+
+export async function emulateLoader(duration, interval) {
+    let percentage = 0;
+
+    // Helper function to delay execution
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    while (percentage < 100) {
+        // Wait for the specified interval
+        await delay(interval);
+
+        // Increment the percentage
+        // percentage += Math.floor(Math.random(7, 12));
+        percentage += Math.floor(Math.random() * 6) + 7;
+
+        // Ensure the percentage doesn't exceed 100
+        if (percentage > 100) {
+            percentage = 100;
+        }
+
+        // Log the current percentage
+        console.log(`Current percentage: ${percentage}%`);
+    }
+
+    return percentage;
+}
