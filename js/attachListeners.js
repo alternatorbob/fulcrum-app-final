@@ -21,7 +21,7 @@ export function attachListeners() {
     });
 
     backButton.addEventListener("click", () => {
-        switchView("result", "home");
+        // switchView("result", "home");
     });
 
     const downloadButton = document.querySelector("#download-button");

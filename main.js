@@ -12,6 +12,39 @@ import { clearCanvas } from "./js/utils";
 
 import { detectionObjects } from "./js/faceDetectionSwap";
 
+export let activeState = "home";
+
+export function switchState(activeState) {
+    switch (activeState) {
+        case "home":
+            console.log(`Current View: ${activeState}`);
+            //home
+            const inputElement = document.querySelector("#camera-input");
+            inputElement.addEventListener("change", async (event) => {
+                // imageResult = await handleImageUpload(event);
+                await onImageUpload(event);
+            });
+            
+            break;
+        case "detection":
+            console.log(`Current View: ${activeState}`);
+            
+            break;
+        case "result":
+            console.log(`Current View: ${activeState}`);
+            break;
+        case "edit-select":
+            console.log(`Current View: ${activeState}`);
+            break;
+        case "edit-face":
+            console.log(`Current View: ${activeState}`);
+            break;
+        case "edit-prompt":
+            console.log(`Current View: ${activeState}`);
+            break;
+    }
+}
+
 export function updateView(activeView) {
     // const { activeView, detectionObjects, canvases } = content;
 

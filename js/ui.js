@@ -14,6 +14,10 @@ export let activeView = "home";
 //     updateView(content);
 // }
 
+export function switchViewNew(activeState){
+    console.log('switchview');
+}
+
 export function switchView(activeView, destination) {
     const activeViewElement = document.querySelector(`.${activeView}`);
     const destinationElement = document.querySelector(`.${destination}`);
@@ -26,11 +30,9 @@ export function switchView(activeView, destination) {
 
 export function moveCanvasLayers(destination) {
     const photoContainer = document.querySelector("#photo--input--container");
-    const containerParent = photoContainer.parentNode;
     const destinationDiv = document.querySelector(`.${destination}`);
 
     destinationDiv.appendChild(photoContainer);
-    // containerParent.removeChild(photoContainer);
 }
 
 export class EditMessage {

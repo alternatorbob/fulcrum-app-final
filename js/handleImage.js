@@ -2,7 +2,7 @@ import * as faceapi from "face-api.js";
 import { getDetections } from "./faceDetectionSwap";
 import { Loader, switchView } from "./ui";
 import { createCanvasLayers } from "./drawUtils";
-import { updateView } from "../main";
+import { switchState, updateView } from "../main";
 
 export async function onImageUpload(e) {
     const canvas = document.querySelector("#image--canvas");
@@ -43,7 +43,8 @@ export async function onImageUpload(e) {
                 //     canvases: canvases,
                 //     event: null,
                 // };
-                switchView("home", "result");
+                // switchView("home", "result");
+                switchState("detection");
             }
         );
     }
